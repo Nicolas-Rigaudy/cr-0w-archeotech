@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# crow archeotech: link this brick's QML modules into the archeotech shell.
+#   crow archeotech link     symlink crow-agents and crow-usage into the shell modules dir
+#   crow archeotech unlink   remove those symlinks (only when they point here)
+#   crow archeotech status   show where each module points
+# Shell modules dir: $ARCHEOTECH_MODULES_DIR, else <XDG_DATA_HOME or real home/.local/share>/archeotech/modules.
+set -euo pipefail
+here=$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)
+real_home=$(getent passwd "$(id -un)" | cut -d: -f6)
+dest=${ARCHEOTECH_MODULES_DIR:-${XDG_DATA_HOME:-$real_home/.local/share}/archeotech/modules}
+mods=(crow-agents crow-usage)
+
+case "${1:-status}" in
+  link)
+    mkdir -p "$dest"
+    for m in "${mods[@]}"; do ln -sfn "$here/$m" "$dest/$m"; echo "$m -> $here/$m"; done ;;
+  unlink)
+    for m in "${mods[@]}"; do
+      if [ -L "$dest/$m" ] && [ "$(readlink -f "$dest/$m")" = "$here/$m" ]; then rm "$dest/$m"; echo "$m unlinked"
+      else echo "$m: not linked here, left alone"; fi
+    done ;;
+  status)
+    for m in "${mods[@]}"; do
+      if [ -L "$dest/$m" ]; then echo "$m -> $(readlink "$dest/$m")"; else echo "$m: not linked ($dest)"; fi
+    done ;;
+  -h|--help) sed -n '2,6p' "$0" | sed 's/^# \{0,1\}//' ;;
+  *) echo "crow archeotech: unknown command ${1} (link, unlink, status)" >&2; exit 2 ;;
+esac

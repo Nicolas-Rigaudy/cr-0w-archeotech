@@ -1,0 +1,10 @@
+# CR-0W user brick: crow panels for the archeotech desktop shell.
+summary: Archeotech shell bar and panel modules (crow agents, crow usage) and their runbooks.
+default: true
+requires: []
+scripts: [crow-archeotech]
+skills: []
+hub_skills: []
+runbooks: [archeotech-crow-agents, archeotech-crow-usage]
+doctor:
+  needs: [crow]
